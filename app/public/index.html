@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>志愿助手</title>
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="side">
+      <div class="brand">
+        <div class="brand-icon">志</div>
+        <div>
+          <h1>志愿助手</h1>
+          <p>给家长看的高考志愿问答</p>
+        </div>
+      </div>
+
+      <div class="mode-note">
+        <strong>先选一个问法</strong>
+        <span>不知道选哪个，就选“终极版”。</span>
+      </div>
+
+      <nav id="versionNav" class="version-nav" aria-label="版本选择"></nav>
+
+      <section class="easy-card">
+        <strong>怎么用？</strong>
+        <ol>
+          <li>输入学校和孩子分数。</li>
+          <li>点“帮我看看”。</li>
+          <li>再看官方来源。</li>
+        </ol>
+      </section>
+    </aside>
+
+    <main class="main">
+      <section class="top">
+        <div>
+          <div class="pill-row">
+            <span class="pill" id="activeVersionBadge">终极版</span>
+            <span class="pill muted" id="providerBadge">搜索服务检测中</span>
+          </div>
+          <h2>直接问，我帮你查最新院校信息</h2>
+          <p id="versionIntro">输入一句话就行，不需要懂专业术语。</p>
+        </div>
+        <div class="text-tools">
+          <button class="small-btn text-toggle" id="fontToggle" type="button" aria-pressed="false">大字模式</button>
+        </div>
+      </section>
+
+      <section class="chat-panel">
+        <div class="chat-box" id="chatBox" aria-live="polite">
+          <div class="bubble assistant">
+            <strong>志愿助手：</strong>
+            <p>你可以这样问：江苏物化生 580 分，想报南京信息工程大学计算机，稳不稳？</p>
+          </div>
+        </div>
+
+        <form id="chatForm" class="chat-form">
+          <textarea id="messageInput" placeholder="在这里直接问：孩子省份、选科、分数/位次、想报学校或专业..." required></textarea>
+          <div class="assist-fields">
+            <input id="schoolInput" placeholder="学校名，可不填" />
+            <input id="provinceInput" placeholder="省份，可不填" />
+            <input id="yearInput" placeholder="年份，如 2026" />
+          </div>
+          <div class="quick-row">
+            <button class="quick" type="button" data-example="孩子河南理科位次6万，想学金融，值不值得？">金融值不值</button>
+            <button class="quick" type="button" data-example="江苏物化生580分，想学电气或计算机，怎么选？">电气/计算机</button>
+            <button class="quick" type="button" data-example="提前批、服从调剂、专业组是什么意思？给我讲简单点。">规则讲简单点</button>
+          </div>
+          <div class="actions">
+            <button class="primary" type="submit">帮我看看</button>
+            <button class="secondary" id="clearChat" type="button">清空</button>
+            <button class="secondary" id="copyAnswer" type="button">复制回答</button>
+          </div>
+        </form>
+      </section>
+
+      <section class="panel">
+        <div class="panel-head">
+          <h3>最新来源</h3>
+          <span id="updatedAt">还没搜索</span>
+        </div>
+        <div id="summaryBox" class="summary">我会优先找学校招生网、阳光高考、省考试院、就业质量报告。搜索结果只是入口，最终要点开官方网页核验。</div>
+        <div id="sourceList" class="source-list"></div>
+      </section>
+
+      <section class="panel skill-workbench">
+        <div class="persona-panel">
+          <div class="panel-head plain">
+            <h3>当前人物状态</h3>
+            <span class="status-pill" id="personaMode">终极版</span>
+          </div>
+          <div class="persona-main">
+            <div class="persona-avatar" id="personaIcon">终</div>
+            <div>
+              <h4 id="personaTitle">终极版 · 总控顾问</h4>
+              <p id="personaStatus">正在综合判断院校、专业、城市、就业和家庭试错成本。</p>
+            </div>
+          </div>
+          <div class="state-list">
+            <div class="state-row">
+              <span>判断重点</span>
+              <strong id="personaFocus">综合现实判断、长期路径、规则核验、院校专业适配和就业出口。</strong>
+            </div>
+            <div class="state-row">
+              <span>说话方式</span>
+              <strong id="personaTone">先给结论，再讲理由，最后提醒必须核验的官方来源。</strong>
+            </div>
+            <div class="state-row">
+              <span>安全边界</span>
+              <strong id="personaGuard">不承诺录取，不冒充真人老师，不用未经核验的信息下定论。</strong>
+            </div>
+          </div>
+        </div>
+
+        <div class="prompt-panel">
+          <div class="panel-head plain">
+            <h3>这样问更准</h3>
+            <button class="small-btn" id="copyPromptSet" type="button">复制全部</button>
+          </div>
+          <p class="prompt-intro">外行人可以直接点模板提问；内行人可以看每条模板背后的判断变量，继续补充分数、位次、选科、城市和家庭约束。</p>
+          <div class="prompt-cards" id="promptCards"></div>
+          <div class="expert-note">
+            <span>内行看这里</span>
+            <strong id="expertNote">不要只看学校名，要把专业壁垒、城市产业、近三年位次和调剂风险放在一起看。</strong>
+          </div>
+          <div class="advanced-actions" aria-label="进阶接入教程">
+            <button class="tutorial-btn" type="button" data-tutorial="deepseek">DeepSeek 接入教程</button>
+            <button class="tutorial-btn" type="button" data-tutorial="openai">OpenAI 接入教程</button>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <div class="modal-backdrop" id="tutorialModal" hidden>
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="tutorialTitle">
+      <div class="modal-head">
+        <div>
+          <span class="modal-kicker">小白教程</span>
+          <h3 id="tutorialTitle">接入教程</h3>
+        </div>
+        <button class="small-btn" id="closeTutorial" type="button">关闭</button>
+      </div>
+      <div class="tutorial-body" id="tutorialBody"></div>
+      <div class="modal-actions">
+        <button class="secondary" id="copyTutorial" type="button">复制教程</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast" class="toast">已复制</div>
+  <script src="/app.js" type="module"></script>
+</body>
+</html>

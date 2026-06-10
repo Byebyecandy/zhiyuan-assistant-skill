@@ -1,0 +1,17 @@
+{
+  "schema_version": "v1",
+  "name_for_human": "志愿助手",
+  "name_for_model": "zhiyuan_assistant",
+  "description_for_human": "给家长看的高考志愿助手，可实时搜索院校官网、招生章程、选科要求和就业质量报告入口。",
+  "description_for_model": "Use this tool to answer Chinese Gaokao application questions, search current university admissions sources, list source confidence, and produce parent-friendly advice. Do not guarantee admission outcomes.",
+  "auth": {
+    "type": "none"
+  },
+  "api": {
+    "type": "openapi",
+    "url": "http://localhost:5178/openapi.json"
+  },
+  "logo_url": "http://localhost:5178/icon.svg",
+  "contact_email": "example@example.com",
+  "legal_info_url": "http://localhost:5178/legal"
+}

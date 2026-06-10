@@ -1,0 +1,14 @@
+{
+  "name": "zhiyuan-assistant-app",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Local web app for 志愿助手 with real-time school search.",
+  "type": "module",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

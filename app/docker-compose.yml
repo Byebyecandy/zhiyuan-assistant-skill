@@ -1,0 +1,8 @@
+services:
+  zhiyuan-assistant:
+    build: .
+    ports:
+      - "5178:5178"
+    env_file:
+      - .env
+    restart: unless-stopped

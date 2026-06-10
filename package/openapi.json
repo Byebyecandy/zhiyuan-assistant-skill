@@ -1,0 +1,86 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "志愿助手 API",
+    "version": "0.1.0",
+    "description": "高考志愿、院校信息实时搜索和家长友好问答接口。"
+  },
+  "servers": [
+    {
+      "url": "http://localhost:5178",
+      "description": "本地运行的志愿助手 App"
+    }
+  ],
+  "paths": {
+    "/api/health": {
+      "get": {
+        "operationId": "health",
+        "summary": "检查服务和搜索 provider 状态",
+        "responses": {
+          "200": {
+            "description": "服务状态"
+          }
+        }
+      }
+    },
+    "/api/versions": {
+      "get": {
+        "operationId": "listVersions",
+        "summary": "列出志愿助手 6 个版本",
+        "responses": {
+          "200": {
+            "description": "版本列表"
+          }
+        }
+      }
+    },
+    "/api/search": {
+      "get": {
+        "operationId": "searchSchoolInfo",
+        "summary": "实时搜索院校信息来源",
+        "parameters": [
+          { "name": "school", "in": "query", "schema": { "type": "string" }, "description": "院校名称" },
+          { "name": "province", "in": "query", "schema": { "type": "string" }, "description": "省份" },
+          { "name": "year", "in": "query", "schema": { "type": "string" }, "description": "年份" },
+          { "name": "keywords", "in": "query", "schema": { "type": "string" }, "description": "关键词，如招生章程 选科要求 就业质量报告" }
+        ],
+        "responses": {
+          "200": {
+            "description": "搜索摘要和来源列表"
+          }
+        }
+      }
+    },
+    "/api/chat": {
+      "post": {
+        "operationId": "chatWithZhiyuanAssistant",
+        "summary": "直接对话并可自动搜索院校信息",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "message": { "type": "string", "description": "用户问题" },
+                  "version": { "type": "string", "enum": ["ultimate", "reality", "chain", "rules", "fit", "career"] },
+                  "school": { "type": "string", "description": "可选，明确院校名称" },
+                  "province": { "type": "string", "description": "省份" },
+                  "year": { "type": "string", "description": "年份" },
+                  "keywords": { "type": "string", "description": "搜索关键词" },
+                  "autoSearch": { "type": "boolean", "description": "是否自动搜索" }
+                },
+                "required": ["message"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "问答结果和可选搜索来源"
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,1255 @@
+﻿<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>志愿助手</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #f6f7f2;
+      --surface: #ffffff;
+      --ink: #18201a;
+      --muted: #6a7169;
+      --line: #dde2d8;
+      --soft: #edf1e8;
+      --teal: #1b7f79;
+      --red: #c4493d;
+      --amber: #c28a22;
+      --blue: #5964a8;
+      --green: #4a7c3a;
+      --shadow: 0 18px 60px rgba(24, 32, 26, 0.08);
+      --radius: 8px;
+      font-family: "Microsoft YaHei", "PingFang SC", "Noto Sans CJK SC", system-ui, sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      background:
+        linear-gradient(180deg, rgba(246, 247, 242, 0.96), rgba(238, 242, 234, 0.96)),
+        radial-gradient(circle at 8% 0%, rgba(27, 127, 121, 0.12), transparent 28%),
+        radial-gradient(circle at 95% 18%, rgba(194, 138, 34, 0.12), transparent 26%);
+      color: var(--ink);
+      min-height: 100vh;
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    button,
+    input,
+    textarea {
+      font: inherit;
+    }
+
+    .app {
+      min-height: 100vh;
+      display: grid;
+      grid-template-columns: 300px minmax(0, 1fr);
+    }
+
+    aside {
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      padding: 22px 16px;
+      border-right: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.76);
+      backdrop-filter: blur(16px);
+      overflow-y: auto;
+    }
+
+    main {
+      min-width: 0;
+      padding: 24px clamp(16px, 3vw, 42px) 38px;
+    }
+
+    .brand {
+      display: grid;
+      gap: 8px;
+      margin-bottom: 20px;
+    }
+
+    .brand h1 {
+      margin: 0;
+      font-size: 22px;
+      line-height: 1.25;
+      letter-spacing: 0;
+    }
+
+    .brand p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.65;
+    }
+
+    .nav {
+      display: grid;
+      gap: 8px;
+    }
+
+    .nav button,
+    .copy-btn,
+    .source-link,
+    .mode-btn {
+      border: 1px solid var(--line);
+      background: var(--surface);
+      color: var(--ink);
+      border-radius: var(--radius);
+      cursor: pointer;
+      transition: border-color 0.15s ease, background 0.15s ease, transform 0.15s ease;
+    }
+
+    .nav button {
+      width: 100%;
+      min-height: 66px;
+      display: grid;
+      grid-template-columns: 38px minmax(0, 1fr);
+      align-items: center;
+      gap: 10px;
+      padding: 10px;
+      text-align: left;
+    }
+
+    .nav button:hover,
+    .copy-btn:hover,
+    .source-link:hover,
+    .mode-btn:hover {
+      border-color: var(--accent, var(--teal));
+      background: #fbfcf8;
+    }
+
+    .nav button[aria-selected="true"] {
+      border-color: var(--accent);
+      background: color-mix(in srgb, var(--accent) 10%, white);
+      box-shadow: inset 4px 0 0 var(--accent);
+    }
+
+    .avatar {
+      width: 38px;
+      height: 38px;
+      border-radius: 8px;
+      display: grid;
+      place-items: center;
+      color: #fff;
+      background: var(--accent);
+      font-weight: 800;
+      font-size: 15px;
+    }
+
+    .nav-name {
+      display: block;
+      font-size: 15px;
+      font-weight: 800;
+      line-height: 1.2;
+    }
+
+    .nav-meta {
+      display: block;
+      margin-top: 5px;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.35;
+      overflow-wrap: anywhere;
+    }
+
+    .side-section {
+      display: none;
+      margin-top: 20px;
+      padding-top: 16px;
+      border-top: 1px solid var(--line);
+    }
+
+    .side-section h2 {
+      margin: 0 0 12px;
+      font-size: 13px;
+      color: var(--muted);
+      font-weight: 700;
+    }
+
+    .check-list {
+      display: grid;
+      gap: 9px;
+    }
+
+    .check-row {
+      display: grid;
+      grid-template-columns: 20px minmax(0, 1fr);
+      gap: 8px;
+      align-items: start;
+      color: var(--ink);
+      font-size: 13px;
+      line-height: 1.45;
+      cursor: pointer;
+    }
+
+    .check-row input {
+      margin: 2px 0 0;
+      accent-color: var(--teal);
+    }
+
+    .topbar {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 14px;
+      margin-bottom: 18px;
+    }
+
+    .title-block {
+      min-width: 0;
+    }
+
+    .eyebrow {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      min-height: 24px;
+      padding: 3px 8px;
+      border-radius: 999px;
+      background: var(--soft);
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 700;
+      border: 1px solid var(--line);
+      white-space: nowrap;
+    }
+
+    .badge.strong {
+      background: color-mix(in srgb, var(--accent) 14%, white);
+      color: var(--accent);
+      border-color: color-mix(in srgb, var(--accent) 32%, white);
+    }
+
+    h2.page-title {
+      margin: 0;
+      font-size: clamp(26px, 4vw, 42px);
+      line-height: 1.12;
+      letter-spacing: 0;
+    }
+
+    .subtitle {
+      margin: 10px 0 0;
+      color: var(--muted);
+      max-width: 860px;
+      font-size: 15px;
+      line-height: 1.7;
+    }
+
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 9px;
+      justify-content: flex-end;
+    }
+
+    .copy-btn,
+    .mode-btn {
+      min-height: 40px;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      font-weight: 800;
+      font-size: 13px;
+    }
+
+    .copy-btn svg,
+    .mode-btn svg {
+      width: 17px;
+      height: 17px;
+      flex: 0 0 auto;
+    }
+
+    .dashboard {
+      display: grid;
+      grid-template-columns: minmax(0, 1.15fr) minmax(320px, 0.85fr);
+      gap: 16px;
+      align-items: start;
+    }
+
+    .panel {
+      background: rgba(255, 255, 255, 0.88);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      min-width: 0;
+    }
+
+    .panel-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 15px 16px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .panel-head h3 {
+      margin: 0;
+      font-size: 15px;
+      letter-spacing: 0;
+    }
+
+    .panel-body {
+      padding: 16px;
+    }
+
+    .grid-two {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .info-card {
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 12px;
+      background: #fbfcf8;
+      min-width: 0;
+    }
+
+    .info-card h4 {
+      margin: 0 0 8px;
+      font-size: 13px;
+      color: var(--accent);
+      letter-spacing: 0;
+    }
+
+    ul.clean {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      display: grid;
+      gap: 8px;
+    }
+
+    ul.clean li {
+      position: relative;
+      padding-left: 14px;
+      color: #2e352f;
+      font-size: 14px;
+      line-height: 1.62;
+      overflow-wrap: anywhere;
+    }
+
+    ul.clean li::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      top: 0.74em;
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--accent);
+    }
+
+    .style-list {
+      display: grid;
+      gap: 10px;
+    }
+
+    .style-item {
+      display: grid;
+      grid-template-columns: 92px minmax(0, 1fr);
+      gap: 10px;
+      padding: 10px 0;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .style-item:last-child {
+      border-bottom: 0;
+    }
+
+    .style-key {
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 800;
+    }
+
+    .style-val {
+      font-size: 14px;
+      line-height: 1.65;
+      overflow-wrap: anywhere;
+    }
+
+    .prompt-box {
+      width: 100%;
+      min-height: 300px;
+      resize: vertical;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 13px;
+      background: #101610;
+      color: #f6f7f2;
+      line-height: 1.65;
+      font-size: 13px;
+      overflow-wrap: anywhere;
+      outline: none;
+    }
+
+    .source-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 9px;
+    }
+
+    .source-link {
+      display: flex;
+      min-height: 44px;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 10px 12px;
+      font-size: 13px;
+      line-height: 1.35;
+      overflow-wrap: anywhere;
+    }
+
+    .source-link svg {
+      width: 15px;
+      height: 15px;
+      color: var(--accent);
+      flex: 0 0 auto;
+    }
+
+    .blend {
+      margin-top: 16px;
+      display: grid;
+      gap: 16px;
+    }
+
+    .blend-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 0.95fr) minmax(340px, 1.05fr);
+      gap: 16px;
+    }
+
+    .mode-tabs {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .mode-btn[aria-pressed="true"] {
+      color: #fff;
+      border-color: var(--teal);
+      background: var(--teal);
+    }
+
+    .matrix {
+      display: grid;
+      gap: 8px;
+    }
+
+    .matrix-row {
+      display: grid;
+      grid-template-columns: 80px minmax(0, 1fr);
+      gap: 10px;
+      padding: 10px 0;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .matrix-row:last-child {
+      border-bottom: 0;
+    }
+
+    .matrix-row strong {
+      color: var(--accent);
+      font-size: 13px;
+    }
+
+    .matrix-row span {
+      font-size: 13px;
+      color: #2e352f;
+      line-height: 1.55;
+    }
+
+    .toast {
+      position: fixed;
+      right: 20px;
+      bottom: 20px;
+      min-width: 180px;
+      max-width: min(360px, calc(100vw - 40px));
+      padding: 12px 14px;
+      background: #18201a;
+      color: white;
+      border-radius: var(--radius);
+      box-shadow: 0 18px 60px rgba(0, 0, 0, 0.22);
+      transform: translateY(20px);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s ease, transform 0.2s ease;
+      font-size: 13px;
+      line-height: 1.4;
+      z-index: 20;
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .mobile-tabs {
+      display: none;
+      margin-bottom: 14px;
+      overflow-x: auto;
+      gap: 8px;
+      padding-bottom: 4px;
+    }
+
+    .mobile-tabs button {
+      flex: 0 0 auto;
+      min-height: 40px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--surface);
+      padding: 8px 11px;
+      font-size: 13px;
+      font-weight: 800;
+      color: var(--ink);
+    }
+
+    .mobile-tabs button[aria-selected="true"] {
+      color: #fff;
+      border-color: var(--accent);
+      background: var(--accent);
+    }
+
+    @media (max-width: 1060px) {
+      .app {
+        grid-template-columns: 1fr;
+      }
+
+      aside {
+        position: static;
+        height: auto;
+        border-right: 0;
+        border-bottom: 1px solid var(--line);
+      }
+
+      .nav {
+        display: none;
+      }
+
+      .mobile-tabs {
+        display: flex;
+      }
+
+      .dashboard,
+      .blend-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 720px) {
+      main {
+        padding: 18px 12px 28px;
+      }
+
+      aside {
+        padding: 16px 12px;
+      }
+
+      .topbar {
+        display: grid;
+      }
+
+      .actions {
+        justify-content: flex-start;
+      }
+
+      .grid-two {
+        grid-template-columns: 1fr;
+      }
+
+      .style-item,
+      .matrix-row {
+        grid-template-columns: 1fr;
+        gap: 4px;
+      }
+
+      .source-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <aside>
+      <section class="brand" aria-label="标题">
+        <h1>志愿助手</h1>
+        <p>6 个可选版本：5 个单模块版 + 1 个终极整合版。抽象公开方法论与表达结构，不冒充真人，不生成个人声纹。</p>
+      </section>
+
+      <nav class="nav" id="sideNav" aria-label="模块选择"></nav>
+
+      <section class="side-section" aria-label="组合选择">
+        <h2>组合 Skill</h2>
+        <div class="check-list" id="blendChecks"></div>
+      </section>
+    </aside>
+
+    <main>
+      <div class="mobile-tabs" id="mobileTabs" aria-label="模块移动端选择"></div>
+
+      <section class="topbar">
+        <div class="title-block">
+          <div class="eyebrow" id="badges"></div>
+          <h2 class="page-title" id="expertTitle"></h2>
+          <p class="subtitle" id="expertIntro"></p>
+        </div>
+        <div class="actions">
+          <button class="copy-btn" id="copyCurrent" type="button">
+            <i data-lucide="copy"></i>
+            复制当前模块
+          </button>
+          <button class="copy-btn" id="copyBlend" type="button">
+            <i data-lucide="layers"></i>
+            复制终极版
+          </button>
+        </div>
+      </section>
+
+      <section class="dashboard" aria-label="方法模块资料面板">
+        <div class="panel">
+          <div class="panel-head">
+            <h3>方法蒸馏</h3>
+            <span class="badge" id="confidenceBadge"></span>
+          </div>
+          <div class="panel-body">
+            <div class="grid-two">
+              <article class="info-card">
+                <h4>公开定位线索</h4>
+                <ul class="clean" id="profileList"></ul>
+              </article>
+              <article class="info-card">
+                <h4>著作 / 视频 / 公开内容线索</h4>
+                <ul class="clean" id="workList"></ul>
+              </article>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-head">
+            <h3>表达方法</h3>
+            <span class="badge strong" id="styleBadge"></span>
+          </div>
+          <div class="panel-body">
+            <div class="style-list" id="styleList"></div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-head">
+            <h3>模块 Skill 提示词</h3>
+            <span class="badge">可直接复制</span>
+          </div>
+          <div class="panel-body">
+            <textarea class="prompt-box" id="promptBox" spellcheck="false"></textarea>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-head">
+            <h3>证据与限制</h3>
+            <span class="badge" id="limitBadge"></span>
+          </div>
+          <div class="panel-body">
+            <div class="info-card" style="margin-bottom: 12px;">
+              <h4>注意</h4>
+              <ul class="clean" id="cautionList"></ul>
+            </div>
+            <div class="source-grid" id="sourceList"></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="blend" aria-label="终极版Skill面板">
+        <div class="panel">
+          <div class="panel-head">
+            <h3>终极版 Skill</h3>
+            <div class="mode-tabs" id="modeTabs">
+              <button class="mode-btn" type="button" data-mode="consult" aria-pressed="true">
+                <i data-lucide="message-square-text"></i>
+                咨询
+              </button>
+              <button class="mode-btn" type="button" data-mode="script" aria-pressed="false">
+                <i data-lucide="scroll-text"></i>
+                脚本
+              </button>
+              <button class="mode-btn" type="button" data-mode="audit" aria-pressed="false">
+                <i data-lucide="list-checks"></i>
+                评审
+              </button>
+            </div>
+          </div>
+          <div class="panel-body blend-grid">
+            <div>
+              <div class="matrix" id="blendMatrix"></div>
+            </div>
+            <textarea class="prompt-box" id="blendBox" spellcheck="false"></textarea>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <div class="toast" id="toast" role="status" aria-live="polite">已复制</div>
+
+  <script>
+    const experts = [
+      {
+        id: "zhang",
+        color: "#c4493d",
+        alias: "东邪",
+        name: "张雪峰",
+        versionName: "现实版",
+        role: "考研与高考升学规划大众传播者",
+        confidence: "公开资料较多",
+        evidenceLevel: "高",
+        intro: "以强冲突表达、东北口语化段子和就业结果导向见长，擅长把院校、专业、考研、就业之间的关系讲成普通家庭能立刻理解的选择题。",
+        profile: [
+          "公开资料多称其本名张子彪，毕业于郑州大学给排水工程专业，曾长期从事考研辅导与升学规划。",
+          "搜狐行业文章称其为苏州峰学蔚来教育科技有限公司创始人、苏州研途教育科技公司联合创始人。",
+          "截至 2026-06-10 检索，21财经等媒体报道其于 2026-03-24 去世；本模块只抽象其公开教学风格，不做真人代言。"
+        ],
+        works: [
+          "《选择比努力更重要：名师张雪峰手把手教你填报高考志愿》，微信读书与京东读书均有书目信息。",
+          "《决胜高中三年关键期》《方向比努力更重要：名师张雪峰考研通关攻略》《你离考研成功，就差这本书》等图书可在得到、图书馆书目、豆瓣等平台检索到。",
+          "抖音账号资料显示其账号为 zxfls，定位为教育领域创作者、考研导师；早期因解读 985 高校的视频出圈。",
+          "直播与短视频中多次围绕专业选择、新闻学、考研路径、普通家庭就业风险等议题形成公共讨论。"
+        ],
+        style: {
+          "语气": "高能、快节奏、冲突感强，常用反问和极端化比喻先抓住注意力，再补充现实理由。",
+          "结构": "先给结论，再解释为什么；常从就业、薪资、城市、学历门槛倒推专业和院校选择。",
+          "语言": "口语、东北味、段子化，把复杂概念压缩成家长能听懂的日常类比。",
+          "风险": "表达锋利，容易被理解为绝对化；用于 Skill 时要保留现实感，去掉人身攻击和过度断言。"
+        },
+        dna: "现实结果导向、降低信息差、就业倒推、强提醒",
+        prompt: `你是一个升学规划解释助手，借鉴张雪峰式的公开教学方法，但不冒充张雪峰本人。
+
+任务：
+1. 先用一句话给出直接判断，让家长知道当前选择的核心利弊。
+2. 用就业、城市、学历门槛、专业壁垒、家庭试错成本五个维度倒推升学建议。
+3. 把复杂政策讲成普通家庭能理解的例子，但不要使用侮辱性、过度绝对化或恐吓式语言。
+4. 每个建议都必须给出前提条件：省份、选科、分数/位次、家庭资源、学生兴趣与抗压能力。
+5. 输出“能选 / 慎选 / 不建议”的分层结论，并列出需要二次核验的数据。
+
+语气：
+直接、口语、节奏快、有现实感；可以使用生活化比喻，但不能冒充真人身份。`,
+        caution: [
+          "不要复刻真人口头禅到让用户误以为本人发言。",
+          "不要把专业前景说成绝对命运，必须保留地区、院校层次和个人能力变量。",
+          "公开报道涉及其去世信息，使用该风格时应保持尊重。"
+        ],
+        sources: [
+          ["知乎专栏：高考志愿填报老师排名", "https://zhuanlan.zhihu.com/p/693962949"],
+          ["微信读书：《选择比努力更重要》", "https://weread.qq.com/web/bookDetail/4ce326a0725223684ceab36"],
+          ["得到：《决胜高中三年关键期》", "https://www.dedao.cn/ebook/detail?id=pAVMknaY9VDA6M7OjdpEvLnKm85rPw9lrO3ZxykgeQJaRb4oBqNzGlX12boL1Nl9"],
+          ["抖音资料：张雪峰老师 zxfls", "https://v.douyin.com/GkmQXM/"],
+          ["21财经：张雪峰逝世报道", "https://www.21jingji.com/article/20260324/herald/da2be4ec2bccc5002a179add588ec535.html"]
+        ]
+      },
+      {
+        id: "liang",
+        color: "#1b7f79",
+        alias: "西毒",
+        name: "梁斌",
+        versionName: "全链路版",
+        role: "全链条学业规划倡导者",
+        confidence: "出版页与采访较多",
+        evidenceLevel: "高",
+        intro: "以“全链条学业规划”为核心概念，强调从小学到博士、从升学到就业的连续路径，把家长焦虑转成长期路线图。",
+        profile: [
+          "华中师范大学出版社图书页介绍其为生涯规划师、中国教育电视台特邀嘉宾、良师教育研究院院长。",
+          "BOSS 直聘公开页面显示其为启承规划中心学业规划导师，涉及中考、高考、考研、申博、就业、留学和考证等赛道。",
+          "腾讯教育采访中，他自述从 2007 年高考志愿规划起步，从业 16 年，并强调“全链条”服务。"
+        ],
+        works: [
+          "《逆袭——全链条生涯规划指导》，华中师范大学出版社，2023-06，ISBN 978-7-5622-0140-5。",
+          "抖音相关搜索与出版社作者简介提到其抖音 ID“行善自有天知”，全网粉丝过 500 万。",
+          "公开讲座内容常围绕山东、北京、非京籍、学历路径、小初高到本硕博路线等问题展开。",
+          "腾讯教育采访中呈现多组教育理念和规划路径，适合提炼为长期规划型 Skill。"
+        ],
+        style: {
+          "语气": "演讲式、宏观、有使命感，容易用金句强化观点。",
+          "结构": "从长期目标倒推当下选择，先讲趋势和系统，再给路径和阶段任务。",
+          "语言": "高频词包括全链条、赛道、路径、认知、圈层、赋能、终身受益。",
+          "风险": "容易过度宏大；用于 Skill 时要落到学生个体、分数和可执行时间表。"
+        },
+        dna: "全链条、长期路线、从小初高到就业、认知升级",
+        prompt: `你是一个全链条学业规划助手，借鉴梁斌式公开表达方法，但不冒充梁斌本人。
+
+任务：
+1. 把学生的升学问题放进“小初高-本科-硕博-就业”的长链条里分析。
+2. 先识别家庭当前所在阶段，再给出 3 个时间尺度：3个月、1年、3-7年。
+3. 不只回答“报什么学校”，还要回答“为什么这条路能连接未来职业”。
+4. 为每条路径标注成本、风险、关键节点、需要补齐的能力。
+5. 输出一张路线图：当前画像、目标层级、升学路径、证书/竞赛/实践、就业出口。
+
+语气：
+系统、鼓励、带路线感；可以使用金句式总结，但每个金句后必须跟可执行动作。`,
+        caution: [
+          "不要把“全链条”说成固定模板，不同省份和家庭资源差异很大。",
+          "涉及留学、考证、申博等路径时，需要二次核验政策和费用。",
+          "避免只讲愿景，不给阶段任务。"
+        ],
+        sources: [
+          ["华中师范大学出版社：《逆袭》图书页", "https://press.ccnu.edu.cn/copy_1_prodetail_new.jsp?pid=3843&urltype=tree.TreeTempUrl&wbtreeid=1081"],
+          ["腾讯教育采访：梁斌全链条规划", "https://view.inews.qq.com/a/20231206A05LW900"],
+          ["BOSS直聘：启承规划中心导师介绍", "https://m.zhipin.com/companys/2ddbef0de109ba5f03d63926GVI~.html"],
+          ["搜狐：山东专场讲座回顾", "https://www.sohu.com/a/668281133_121686768"],
+          ["知乎专栏：高考志愿填报老师排名", "https://zhuanlan.zhihu.com/p/693962949"]
+        ]
+      },
+      {
+        id: "fei",
+        color: "#c28a22",
+        alias: "南帝",
+        name: "费国军",
+        versionName: "规则版",
+        role: "高考志愿与专业解读型老师",
+        confidence: "可验证资料偏少",
+        evidenceLevel: "中",
+        intro: "公开信息集中在高考志愿、投档规则、院校专业、河南考生语境等短视频内容；适合抽象成细节型、规则型、流程型 Skill。",
+        profile: [
+          "搜狐行业文章称其为《大学之大》副主编、“学霸来了”特邀高考规划专家，并称其从事高考教育行业 12 年。",
+          "公开搜索结果显示“费老师讲教育”抖音号 89153748996，内容标签集中在高考、志愿填报、升学规划。",
+          "所属公司、完整履历、正式出版署名信息公开可验证度较低，界面中按中等置信处理。"
+        ],
+        works: [
+          "《大学之大》相关图书在豆瓣有条目，书名包含“抖音爆款费老师高考志愿填报指南”等信息；豆瓣条目显示作者为任广超。",
+          "抖音搜索结果包含“一轮投档”“服从调剂”“提前批”“军工央企”“国防七子”等主题。",
+          "其视频内容更像政策拆解和院校专业专题短讲，而不是长线陪跑式规划。"
+        ],
+        style: {
+          "语气": "稳定、细讲、偏规则解释，少做戏剧化冲突。",
+          "结构": "围绕一个问题拆规则：概念是什么、为什么重要、填报时怎么处理。",
+          "语言": "常见主题词是投档、调剂、提前批、院校层次、专业出口、河南考生难度。",
+          "风险": "公开视频碎片化较多；不要推断其私人履历或未公开著作身份。"
+        },
+        dna: "政策细节、投档规则、专业专题、稳健解释",
+        prompt: `你是一个高考志愿规则拆解助手，借鉴费老师式公开视频内容的方法，但不冒充费国军本人。
+
+任务：
+1. 每次只解决一个填报概念或一个院校专业问题。
+2. 用“定义-影响-误区-操作建议-核验清单”的结构解释。
+3. 对投档、调剂、提前批、特殊院校、专业出口等内容必须给出流程化说明。
+4. 如果用户给出省份和批次，优先提醒本省规则差异；没有省份就先列待确认项。
+5. 输出要稳，不做录取承诺，不用夸张表达。
+
+语气：
+清楚、细致、像给家长做规则说明；少讲宏大愿景，多讲“这一步填错会影响什么”。`,
+        caution: [
+          "《大学之大》副主编身份来自行业文章，暂未检索到出版页直接验证。",
+          "短视频账号与实名人物之间仍需人工确认。",
+          "不要把河南考生语境推广到所有省份。"
+        ],
+        sources: [
+          ["知乎专栏：费国军简介线索", "https://zhuanlan.zhihu.com/p/693962949"],
+          ["豆瓣：《大学之大》图书条目", "https://book.douban.com/subject/37883956/"],
+          ["抖音搜索：费老师讲教育", "https://www.douyin.com/search/%E8%B4%B9%E8%80%81%E5%B8%88%E8%AE%B2%E6%95%99%E8%82%B2"],
+          ["抖音搜索：费老师讲高考直播", "https://www.douyin.com/search/%E8%B4%B9%E8%80%81%E5%B8%88%E8%AE%B2%E9%AB%98%E8%80%83%E7%9B%B4%E6%92%AD"]
+        ]
+      },
+      {
+        id: "zheng",
+        color: "#5964a8",
+        alias: "北丐",
+        name: "郑老师",
+        versionName: "院校专业版",
+        role: "高校与专业短讲型升学规划老师",
+        confidence: "实名资料不足",
+        evidenceLevel: "中低",
+        intro: "公开文章只给出“郑老师”称谓，称其毕业于中南大学、硕士研究生、女老师。可检索视频多为“高校 + 专业”的短讲，适合抽象成精确、冷静、适配度分析型 Skill。",
+        profile: [
+          "搜狐行业文章称其毕业于中南大学、硕士研究生学历，是五位中唯一女老师。",
+          "同文称其从事学业规划十余年，服务过上万名高考生；但未公开全名和公司。",
+          "抖音搜索存在多个“郑老师讲升学规划/郑老师讲升学”账号，无法仅凭搜索确认都指向同一人。"
+        ],
+        works: [
+          "可检索到“郑老师讲升学规划”相关抖音视频标题，如广东以色列理工学院机械工程、长沙理工大学电气工程及其自动化、中南大学临床医学等。",
+          "公开内容形态偏单校单专业解读，适合沉淀为“院校画像 + 专业画像 + 适配人群”的模块。",
+          "暂未检索到可确认的个人著作。"
+        ],
+        style: {
+          "语气": "克制、理性、讲事实，适合给家长做低情绪密度的专业解释。",
+          "结构": "以学校或专业为入口，拆位置、层次、学科、就业、适合人群。",
+          "语言": "关键词偏院校名、专业名、培养方向、就业场景、风险边界。",
+          "风险": "姓名与账号同名情况多；不要把某个抖音账号的粉丝数据直接归为截图人物。"
+        },
+        dna: "院校专业画像、女性咨询视角、细致适配、低冲突表达",
+        prompt: `你是一个院校专业适配分析助手，借鉴“郑老师”式公开视频短讲方法，但不冒充任何真人。
+
+任务：
+1. 对用户给出的学校或专业，输出“学校层次、专业实力、城市资源、就业方向、适合学生、避坑点”六段。
+2. 用温和、克制的方式解释，不制造焦虑。
+3. 如果学生兴趣与就业结果冲突，先复述学生偏好，再给出现实边界。
+4. 对女生、跨省、医学、电气、会计、合作办学等高敏问题，必须列出长期成本和培养周期。
+5. 最后给出 3 个核验动作：查招生章程、查选科要求、查近三年位次。
+
+语气：
+细致、平稳、少口号；像一位做一对一咨询的老师在帮家庭把信息摆清楚。`,
+        caution: [
+          "未检索到全名，不能生成具体身份背书。",
+          "账号“郑老师讲升学规划”可能存在同名或不同主体。",
+          "不要把一所学校的单条短视频结论泛化到所有省份批次。"
+        ],
+        sources: [
+          ["知乎专栏：郑老师简介线索", "https://zhuanlan.zhihu.com/p/693962949"],
+          ["抖音搜索：郑老师讲升学", "https://www.douyin.com/search/%E9%83%91%E8%80%81%E5%B8%88%E8%AE%B2%E5%8D%87%E5%AD%A6"],
+          ["抖音视频：广东以色列理工学院机械工程", "https://m.douyin.com/share/video/7241183146702687540"],
+          ["抖音视频：长沙理工大学电气工程", "https://m.douyin.com/share/video/7244957155223293218"]
+        ]
+      },
+      {
+        id: "hao",
+        color: "#4a7c3a",
+        alias: "中神通",
+        name: "郝运",
+        versionName: "本地职业版",
+        role: "河北本地化与职业规划结合型老师",
+        confidence: "本地文章较多",
+        evidenceLevel: "中",
+        intro: "公开资料塑造其为低调、少直播、重职业规划和河北本地政策的规划师。适合抽象成 HR 就业视角 + 本省录取规则 + 稳妥填报的 Skill。",
+        profile: [
+          "搜狐行业文章称其毕业于中国石油大学人力资源管理专业，有十多年中外企业人力资源管理经验。",
+          "同文称其就职于大登科教育科技（河北）有限公司，是联合创始人和首席资深规划师，主要做河北省高考志愿填报。",
+          "2020 年搜狐文章称其为“大登科”首席填报专家，并由其解读河北 2021 新高考。"
+        ],
+        works: [
+          "暂未检索到个人著作；公开信息主要是本地媒体/搜狐号文章、机构文章和录制视频。",
+          "公开视频和文章主题多为河北新高考、3+1+2、专业类+院校、96 个平行志愿、压线录取等。",
+          "中华网文章将其与张雪峰对照，强调其 HR 背景、低调风格和就业市场视角。"
+        ],
+        style: {
+          "语气": "低调、稳、少表演，强调专业性和本地规则。",
+          "结构": "先讲省内政策框架，再讲填报方式变化，最后落到学生分数利用率。",
+          "语言": "关键词包括河北、3+1+2、专业类+院校、96个志愿、职业规划、用人标准。",
+          "风险": "机构文章营销色彩较明显；使用时要把“成功率/压线录取”等说法改为可核验风险描述。"
+        },
+        dna: "河北本地政策、HR就业视角、稳妥填报、低调实战",
+        prompt: `你是一个本地化升学与职业规划助手，借鉴郝运式公开资料中的方法，但不冒充郝运本人。
+
+任务：
+1. 优先确认省份，若是河北，按“3+1+2、物理/历史分列计划、专业类+院校、96个志愿”框架分析。
+2. 把职业规划放进志愿填报：专业对应行业、企业用人门槛、薪资稳定性、职业成长路径。
+3. 对每个志愿建议给出“冲稳保”定位和退档/滑档风险。
+4. 避免营销式成功率承诺，只给概率区间、数据来源和核验动作。
+5. 输出必须包含：政策要点、职业出口、志愿梯度、风险提醒、家长下一步准备清单。
+
+语气：
+稳健、务实、少渲染；像一位熟悉本省录取规则和企业招聘的规划师。`,
+        caution: [
+          "机构宣传中的高成功率不能当作可复用承诺。",
+          "河北经验不能直接迁移到其他省份。",
+          "职业规划建议需要结合学生性格、家庭城市选择和行业周期。"
+        ],
+        sources: [
+          ["知乎专栏：郝运简介线索", "https://zhuanlan.zhihu.com/p/693962949"],
+          ["搜狐：郝运解读河北新高考", "https://www.sohu.com/a/441422607_120014696?scm=10001.325_13-325_13.0.0-0-0-0-0.5_1334"],
+          ["中华网：志愿填报界南北双雄", "https://m.tech.china.com/hea/articles/20250328/202503281654080.html"],
+          ["搜狐：大登科教育品牌文章", "https://www.sohu.com/a/857162373_120014696?scm=10001.325_13-325_13.0.0-0-0-0-0.5_1334"]
+        ]
+      }
+    ];
+
+    const modePrompts = {
+      consult: "输出一份一对一咨询答复，优先解决家长当前决策。",
+      script: "输出一条 90 秒短视频脚本，结构为开场钩子、核心解释、案例、行动建议。",
+      audit: "输出一份志愿方案评审表，标出信息缺口、逻辑风险、需要核验的数据。"
+    };
+
+    let currentId = "ultimate";
+    let currentMode = "consult";
+    const selected = new Set(experts.map((item) => item.id));
+
+    const $ = (id) => document.getElementById(id);
+
+    function ultimateVersion() {
+      return {
+        id: "ultimate",
+        color: "#18201a",
+        alias: "终极",
+        name: "终极版",
+        versionName: "终极版",
+        role: "五模块整合志愿助手",
+        confidence: "组合方法论",
+        evidenceLevel: "组合",
+        intro: "把现实结果导向、全链条规划、规则拆解、院校专业适配、本地职业规划五个版本整合到一个完整工作流里，适合正式咨询、方案评审和短视频脚本生成。",
+        profile: [
+          "先收集省份、年份、选科、分数/位次、批次、预算、城市偏好、学生兴趣、长期目标。",
+          "再用五个模块分别检查现实就业、长期路径、志愿规则、院校专业适配和职业出口。",
+          "最后输出能选 / 慎选 / 不建议、冲稳保路径、风险清单和下一步核验动作。"
+        ],
+        works: [
+          "整合现实版、全链路版、规则版、院校专业版、本地职业版。",
+          "支持咨询答复、短视频脚本、志愿方案评审三种输出模式。",
+          "适合在 GitHub Skill、网页复制提示词、咨询工作流中直接使用。"
+        ],
+        style: {
+          "语气": "直接但克制，先讲判断，再讲条件和证据。",
+          "结构": "信息收集 → 核心判断 → 五模块分析 → 三条路径 → 风险 → 核验清单。",
+          "语言": "避免真人化表达，使用方法论标签和可执行建议。",
+          "风险": "不做录取保证；涉及政策、位次、招生章程时必须要求核验。"
+        },
+        dna: "五模块整合、正式咨询、方案评审、可执行路线",
+        prompt: buildUltimatePrompt(),
+        caution: [
+          "不冒充任何真实老师，不声称授权或官方身份。",
+          "不复刻真人口头禅、肖像、声音、二维码或长段原文。",
+          "所有录取和政策判断必须回到当年招生章程、选科要求和近三年位次。"
+        ],
+        sources: [
+          ["Skill 本体：志愿助手", "../../SKILL.md"],
+          ["方法论研究说明", "../../references/research/advisor-modules.md"],
+          ["发布风险说明", "../../references/research/legal-risk.md"]
+        ]
+      };
+    }
+
+    function versionItems() {
+      return [...experts, ultimateVersion()];
+    }
+
+    function expertById(id) {
+      return versionItems().find((item) => item.id === id) || ultimateVersion();
+    }
+
+    function buildUltimatePrompt() {
+      const modules = experts.map((item) => `- ${item.name}版本：${item.dna}`).join("\n");
+      const guardrails = experts.map((item) => `- ${item.name}限制：${item.caution[0]}`).join("\n");
+      return `你是“志愿助手”的终极版，一个高考志愿、升学规划、专业选择、考研与就业路径分析助手。
+
+定位：
+不冒充任何真实老师，不声称官方或授权身份；只综合公开资料中可抽象的方法论。
+
+已整合的 5 个版本：
+${modules}
+
+工作流：
+1. 先收集基础信息：省份、年份、选科、分数/位次、批次、家庭预算、城市偏好、学生兴趣、职业目标、是否接受读研/留学/考公。
+2. 用现实结果导向判断专业和学校的长期价值，但避免绝对化、恐吓式表达。
+3. 用全链条视角把高中、本科、读研、就业连接起来，给出短期和长期两组动作。
+4. 用规则拆解方式解释投档、调剂、批次、特殊招生、选科要求和本省政策。
+5. 用院校专业画像判断适配度：学校层次、学科实力、城市资源、就业出口、学习成本。
+6. 用职业规划视角评估行业周期、企业用人标准、薪资稳定性和成长路径。
+
+输出格式：
+一、家庭画像与关键信息缺口
+二、核心判断：能选 / 慎选 / 不建议
+三、3 条可行路径：冲刺型、稳妥型、长期型
+四、风险清单：政策风险、退档/滑档风险、就业风险、家庭成本风险
+五、下一步核验：招生章程、选科要求、近三年位次、培养方案、就业质量报告
+
+风格约束：
+${guardrails}
+- 不做录取保证；不编造未公开履历；不把短视频观点当成所有省份的通用政策。`;
+    }
+
+    function renderNav() {
+      const nav = $("sideNav");
+      const mobile = $("mobileTabs");
+      nav.innerHTML = "";
+      mobile.innerHTML = "";
+
+      versionItems().forEach((item) => {
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.style.setProperty("--accent", item.color);
+        btn.setAttribute("aria-selected", String(item.id === currentId));
+        btn.innerHTML = `
+          <span class="avatar">${item.alias.slice(0, 1)}</span>
+          <span>
+            <span class="nav-name">${item.versionName || item.name}</span>
+            <span class="nav-meta">${item.alias} · ${item.role}</span>
+          </span>
+        `;
+        btn.addEventListener("click", () => setCurrent(item.id));
+        nav.appendChild(btn);
+
+        const mBtn = document.createElement("button");
+        mBtn.type = "button";
+        mBtn.style.setProperty("--accent", item.color);
+        mBtn.setAttribute("aria-selected", String(item.id === currentId));
+        mBtn.textContent = `${item.alias} ${item.versionName || item.name}`;
+        mBtn.addEventListener("click", () => setCurrent(item.id));
+        mobile.appendChild(mBtn);
+      });
+    }
+
+    function renderChecks() {
+      const wrap = $("blendChecks");
+      wrap.innerHTML = "";
+      versionItems().forEach((item) => {
+        const label = document.createElement("label");
+        label.className = "check-row";
+        label.innerHTML = `
+          <input type="checkbox" value="${item.id}" ${selected.has(item.id) ? "checked" : ""} />
+          <span><strong>${item.versionName || item.name}</strong><br>${item.dna}</span>
+        `;
+        label.querySelector("input").addEventListener("change", (event) => {
+          if (event.target.checked) selected.add(item.id);
+          else selected.delete(item.id);
+          if (!selected.size) {
+            selected.add(item.id);
+            event.target.checked = true;
+          }
+          renderBlend();
+        });
+        wrap.appendChild(label);
+      });
+    }
+
+    function setCurrent(id) {
+      currentId = id;
+      renderNav();
+      renderExpert();
+    }
+
+    function listItems(id, items) {
+      const ul = $(id);
+      ul.innerHTML = items.map((item) => `<li>${item}</li>`).join("");
+    }
+
+    function renderExpert() {
+      const item = expertById(currentId);
+      document.documentElement.style.setProperty("--accent", item.color);
+
+      $("badges").innerHTML = `
+        <span class="badge strong">${item.alias}</span>
+        <span class="badge">${item.role}</span>
+        <span class="badge">证据等级：${item.evidenceLevel}</span>
+      `;
+      $("expertTitle").textContent = item.id === "ultimate" ? "终极版" : `${item.versionName || item.name}`;
+      $("expertIntro").textContent = item.intro;
+      $("confidenceBadge").textContent = item.confidence;
+      $("styleBadge").textContent = item.dna;
+      $("limitBadge").textContent = `证据等级：${item.evidenceLevel}`;
+
+      listItems("profileList", item.profile);
+      listItems("workList", item.works);
+      listItems("cautionList", item.caution);
+
+      $("styleList").innerHTML = Object.entries(item.style).map(([key, value]) => `
+        <div class="style-item">
+          <div class="style-key">${key}</div>
+          <div class="style-val">${value}</div>
+        </div>
+      `).join("");
+
+      $("promptBox").value = item.prompt;
+      $("sourceList").innerHTML = item.sources.map(([label, url]) => `
+        <a class="source-link" href="${url}" target="_blank" rel="noreferrer">
+          <span>${label}</span>
+          <i data-lucide="external-link"></i>
+        </a>
+      `).join("");
+
+      refreshIcons();
+    }
+
+    function renderBlend() {
+      const chosen = experts.filter((item) => selected.has(item.id));
+      const matrix = $("blendMatrix");
+      matrix.innerHTML = chosen.map((item) => `
+        <div class="matrix-row" style="--accent:${item.color}">
+          <strong>${item.name}</strong>
+          <span>${item.dna}</span>
+        </div>
+      `).join("");
+
+      const modules = chosen.map((item) => `- ${item.name}模块：${item.dna}`).join("\n");
+      const guardrails = chosen.map((item) => `- ${item.name}限制：${item.caution[0]}`).join("\n");
+      $("blendBox").value = `你是一个升学规划综合 Skill，不冒充任何真人，只综合公开资料中可抽象的方法。
+
+已选择模块：
+${modules}
+
+当前输出模式：
+${modePrompts[currentMode]}
+
+统一工作流：
+1. 先收集基础信息：省份、选科、分数/位次、批次、家庭预算、城市偏好、学生兴趣、职业目标、是否接受读研/留学/考公。
+2. 用现实结果导向判断专业和学校的长期价值，但避免绝对化、恐吓式表达。
+3. 用全链条视角把高中、本科、读研、就业连接起来，给出短期和长期两组动作。
+4. 用规则拆解方式解释投档、调剂、批次、特殊招生、选科要求和本省政策。
+5. 用院校专业画像判断适配度：学校层次、学科实力、城市资源、就业出口、学习成本。
+6. 用职业规划视角评估行业周期、企业用人标准、薪资稳定性和成长路径。
+
+输出格式：
+一、家庭画像与关键信息缺口
+二、核心判断：能选 / 慎选 / 不建议
+三、3 条可行路径：冲刺型、稳妥型、长期型
+四、风险清单：政策风险、退档/滑档风险、就业风险、家庭成本风险
+五、下一步核验：招生章程、选科要求、近三年位次、培养方案、就业质量报告
+
+风格约束：
+${guardrails}
+- 不做录取保证；不编造未公开履历；不把短视频观点当成所有省份的通用政策。`;
+    }
+
+    function renderModes() {
+      $("modeTabs").querySelectorAll("button").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          currentMode = btn.dataset.mode;
+          $("modeTabs").querySelectorAll("button").forEach((node) => {
+            node.setAttribute("aria-pressed", String(node === btn));
+          });
+          renderBlend();
+        });
+      });
+    }
+
+    async function copyText(text) {
+      try {
+        await navigator.clipboard.writeText(text);
+        showToast("已复制到剪贴板");
+      } catch (error) {
+        showToast("复制受限，请手动选中文本");
+      }
+    }
+
+    function showToast(text) {
+      const toast = $("toast");
+      toast.textContent = text;
+      toast.classList.add("show");
+      window.clearTimeout(showToast.timer);
+      showToast.timer = window.setTimeout(() => toast.classList.remove("show"), 1800);
+    }
+
+    function refreshIcons() {
+      if (window.lucide) {
+        window.lucide.createIcons();
+      }
+    }
+
+    $("copyCurrent").addEventListener("click", () => copyText($("promptBox").value));
+    $("copyBlend").addEventListener("click", () => copyText($("blendBox").value));
+
+    renderNav();
+    renderChecks();
+    renderModes();
+    renderExpert();
+    renderBlend();
+  </script>
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js" onload="lucide.createIcons()"></script>
+</body>
+</html>
